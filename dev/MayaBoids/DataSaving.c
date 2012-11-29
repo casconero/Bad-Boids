@@ -1,6 +1,6 @@
 #include "DataSaving.h"
 
-void _DataSaving(InfoCache *cache)
+void _DataSaving(InfoDataCache *cache)
 {
 	printf("DataSaving initialization...\n");
 
@@ -8,8 +8,8 @@ void _DataSaving(InfoCache *cache)
 	{
 	case MAYANCACHE:
 		initMethod = init;
-		saveMethod = writeMayaNCacheBlock;
-		writeHeaderMethod = writeMayaNCacheHeader;
+		saveMethod = mayaCache;
+		enableChannelMethod = enableChannel;
 		closeMethod = closeMayaNCacheFile;
 		deleteMethod = deleteFile;
 		printf("MayaNCache library loaded\n");
@@ -33,14 +33,18 @@ void _DataSaving(InfoCache *cache)
 	default:
 		break;
 	};
-	initMethod(cache->particleSysName,cache->fileName,cache->cacheFormat,cache->option,cache->fps,cache->start,cache->end);
-	writeHeaderMethod();
+	// remember: Add the extra information (the "Null" and "0" options )
+	initMethod(cache->particleSysName,cache->fileName,cache->cacheFormat,cache->option,cache->fps,cache->start,cache->end,NULL,0);
 }
 
+void _EnableChannel(CHANNELTYPE channelActive, ENABLEDISABLED ea)
+{
+	enableChannelMethod(channelActive, ea);
+}
 
 void _write(int frame, Channel * channels)
 {
-	saveMethod(frame,channels);
+	saveMethod();
 }
 
 void _delete()

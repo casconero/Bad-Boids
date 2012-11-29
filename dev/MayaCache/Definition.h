@@ -1,6 +1,6 @@
 //c89
-#ifndef _DEFINITION_H_INCLUDED
-#define _DEFINITION_H_INCLUDED
+#ifndef _DEFINITIONS_H_INCLUDED
+#define _DEFINITIONS_H_INCLUDED
 
 #include <Boolean.h>
 #include <MayaNCache.h>
@@ -22,26 +22,26 @@
 #define POSITIONVELOCITY 7				// id,count,birthTime,position,lifespanPP,finalLifespanPP,velocity
 #define POSITIONVELOCITYACCELERATION 8	// id,count,birthTime,position,lifespanPP,finalLifespanPP,velocity,acceleration
 // open to futures implementations 
-
-typedef struct selectedChannel
-{
-	bool id;
-	bool count;
-	bool birthTime;
-	bool position;
-	bool lifespannPP;
-	bool finalLifespanPP;
-	bool velocity;
-	bool acceleration;
-	bool worldPosition;
-	bool worldVelocity;
-	bool worldVelocityInObjectSpace;
-	bool mass;
-	bool age;
-	bool rgbPP;
-	bool opacityPP;
-	bool radiusPP;
-}SelectedChannel;
+//
+//typedef struct selectedChannel
+//{
+//	bool id;
+//	bool count;
+//	bool birthTime;
+//	bool position;
+//	bool lifespannPP;
+//	bool finalLifespanPP;
+//	bool velocity;
+//	bool acceleration;
+//	bool worldPosition;
+//	bool worldVelocity;
+//	bool worldVelocityInObjectSpace;
+//	bool mass;
+//	bool age;
+//	bool rgbPP;
+//	bool opacityPP;
+//	bool radiusPP;
+//}SelectedChannel;
 
 // typedef struct channel
 // {

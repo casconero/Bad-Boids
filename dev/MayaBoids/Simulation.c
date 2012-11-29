@@ -80,6 +80,9 @@ void initSim(SimulationParameters *simParams, RulesParameters *applyingRules,Inf
 			leaderInit(20);
 		}
 	initDesires(leader);
+
+	_Output(&cacheFileOption);
+
 }
 
 // update simulation
@@ -93,7 +96,7 @@ int  update()
 	progress=0;
 	simulationLenght=(unsigned int)ceil(simParameters.fps * simParameters.lenght);
 
-	_Output(&cacheFileOption);
+	//_Output(&cacheFileOption);
 	
 	while((!abortSimulation) && (progress<=simulationLenght))
 	{

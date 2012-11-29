@@ -1,7 +1,7 @@
 //c89
 #ifndef _DEFINITION_H_INCLUDED
 #define _DEFINITION_H_INCLUDED
-
+#include <Definition.h>
 //#include "Boolean.h"
 //#define SUCCESS_SIM 0
 //#define INTERRUPTED_SIM 1
@@ -11,10 +11,10 @@
 //#define LOGENABLEDON TRUE
 //#define LOGENABLEDOFF FALSE
 //
-//#define SAVEMETHOD int
-//#define MAYANCACHE 0
-//#define TEXTDATA 1
-//#define XMLDATA 2
+#define SAVEMETHOD int
+#define MAYANCACHE 0
+#define TEXTDATA 1
+#define XMLDATA 2
 //
 //#define CACHEFORMAT int
 //#define ONEFILE 0
@@ -37,17 +37,17 @@
 //	void *elements;			// DBLA elements: double array; FVCA elements: float triples' array  
 //}Channel;
 //
-//typedef struct infoCache
-//{
-//	char *particleSysName;
-//	char *fileName;
-//	SAVEMETHOD saveMethod;
-//	CACHEFORMAT cacheFormat;
-//	CACHEOPTION option;
-//	LOG loging;
-//	unsigned int fps;
-//	double start;
-//	double end;
-//}InfoCache;
+typedef struct infoDataCache
+{
+	char *particleSysName;
+	char *fileName;
+	SAVEMETHOD saveMethod;
+	CACHEFORMAT cacheFormat;
+	CACHEOPTION option;
+	LOG loging;
+	unsigned int fps;
+	double start;
+	double end;
+}InfoDataCache;
 
 #endif
