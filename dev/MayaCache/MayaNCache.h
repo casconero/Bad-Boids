@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <Boolean.h>
 
-#include "..\MayaBoids\Definition.h"
 
 // generic swap macro managing "endianess"
 #define GENERICSWAP(type,returnType)				\
@@ -24,59 +24,33 @@
 		return a;									\
 	}	
 
-////#define info.particleSysName	"BoidPtShape"
-//#define CACHEOPTION int 
-//#define ALLCHANNEL 16					// not used 
-//#define POSITION 6						// id,count,birthTime,position,lifespanPP,finalLifespanPP
-//#define POSITIONVELOCITY 7				// id,count,birthTime,position,lifespanPP,finalLifespanPP,velocity
-//#define POSITIONVELOCITYACCELERATION 8	// id,count,birthTime,position,lifespanPP,finalLifespanPP,velocity,acceleration
-//// open to futures implementations 
-
 // channel type 
 #define CHANNELTYPE int
-#define _ID 0
-#define _COUNT 1
-#define _BIRTHTIME 2
-#define _POSITION 3
-#define _LIFESPANPP 4
-#define _FINALLIFESPANPP 5
-#define _VELOCITY 6
-#define _ACCELERATION 7
-#define _WORLDPOSITION 8
-#define _WORLDVELOCITY 9
-#define _WORLDVELOCITYINOBJECTSPACE 10
-#define _MASS 11
-#define _AGE 12
-#define _RGBPP 13
-#define _OPACITYPP 14
-#define _RADIUSPP 15
-
-// channel name 
-#define CHANNELNAME char*
-#define IDCHANNEL "id"
-#define COUNTCHANNEL "count"
-#define BIRTHTIMECHANNEL "birthTime"
-#define POSITIONCHANNEL "position"
-#define LIFESPANPPCHANNEL "lifespanPP"
-#define FINALLIFESPANPPCHANNEL "finalLifespanPP"
-#define VELOCITYCHANNEL "velocity"
-#define ACCELERATION "acceleration"
-#define WORLDPOSITION "worldPosition"
-#define WORLDVELOCITY "worldVelocity"
-#define WORLDVELOCITYINOBJECTSPACE "worldVelocityInObjectSpace"
-#define MASS "mass"
-#define AGE "age"
-#define RGBPP "rgbPP"
-#define OPACITYPP "opacityPP"
-#define RADIUSPP "radiusPP"
+#define IDCHANNEL 0
+#define COUNTCHANNEL 1
+#define BIRTHTIMECHANNEL 2
+#define POSITIONCHANNEL 3
+#define LIFESPANPPCHANNEL 4
+#define FINALLIFESPANPPCHANNEL 5
+#define VELOCITYCHANNEL 6
+#define ACCELERATIONCHANNEL 7
+#define WORLDPOSITIONCHANNEL 8
+#define WORLDVELOCITYCHANNEL 9
+#define WORLDVELOCITYINOBJECTSPACECHANNEL 10
+#define MASSCHANNEL 11
+#define AGECHANNEL 12
+#define RGBPPCHANNEL 13
+#define OPACITYPPCHANNEL 14
+#define RADIUSPPCHANNEL 15
 
 // channel array format
 #define CHANNELFORMAT char*
 #define DOUBLEARRAY "DoubleArray"
+#define DBLACHANNEL "DBLA"
 #define FLOATVECTORYARRAY "FloatVectorArray"
 #define FVCACHANNEL "FVCA"
-#define DBLACHANNEL "DBLA"
 
+// CONSTANT VALUES DEFINITION
 #define FOR4 "FOR4"
 #define ETIM "ETIM"
 #define STIM "STIM"
@@ -86,53 +60,76 @@
 #define CHNM "CHNM"
 #define SIZE "SIZE"
 
+// the following "magic numbers" correspond to the fixed byte lenght within blocks and channels descriptions
+#define CHANNELFIXEDDIM 28				// 28 stands for "CHNM" + channel name data lenght + "SIZE" + 0x4h + array size (number) + data type tag (DBLA/FVCA) +array size (in bytes)
+#define SINGLEFILEBLOCKFIXEDDIM 16		// 16 stands for the byte lenght of "MYCH" + "TIME" + 0x4h + time
+#define MULTIFILEBLOCKFIXEDDIM 4		// 4 stands for the byte lenght of "MYCH"
 
-// variable type
+
+// channel variable type
+#define CHANNELVARIABLETYPE int
 #define FVCA 0
 #define DBLA 1
-
-// cache format type
-//#define CACHEFORMAT int
-//#define ONEFILE 0
-//#define ONEFILEPERFRAME 1
 
 // default value
 #define MAYATICK 6000
 #define BUFFERLENGTH 65536
 #define FOUR 0x04000000
 
-typedef struct channelName
-{
-	char** names;
-}ChannelName;
+#define ENABLEDISABLED BOOL
+#define ENABLED TRUE
+#define DISABLED FALSE
 
+#define CACHEFORMAT int
+#define ONEFILE 0
+#define ONEFILEPERFRAME 1
+
+#define CACHENUMBEROFCHANNELS 16		// number of defined cache channels
+
+typedef struct channel
+{
+	int channelReference;		// channel name reference
+	BOOL enabled;				// enable or disable channel
+	char *name;					// channel name
+	CHANNELVARIABLETYPE type;	// type of channel DBLA/FVCA
+	int numberOfElements;		// number of elements
+	int numberOfComponents;		// number of components per element (example position 3 components, mass 1 component)
+	double *elementsD;			// DBLA elements: double array; 
+	float *elementsF;			// FVCA elements: float triples' array  
+}Channel;
+
+Channel mayaChannels[CACHENUMBEROFCHANNELS];	// array of channels
+
+// info data structure
 typedef  struct Info
 {
 	 char *particleSysName;
+	 
 	 char *mcFileName;
+	 FILE *mayaMCFile;
+	 char mcChannelBuffer[BUFFERLENGTH];
+
 	 char *xmlFileName;
-	 CACHEFORMAT cacheFormat;
-	 CACHEOPTION option;
-	 unsigned int fps;
-	 double duration;
-	 int start;				// [tick]
-	 int end;				// [tick]
-	 unsigned int mayaFPS;	// [seconds]
-	 FILE * mayaMCFile;
-	 FILE * mayaXMLFile;
-     char mcChannelBuffer[BUFFERLENGTH];
+	 FILE *mayaXMLFile;
 	 char xmlChannelBuffer[BUFFERLENGTH];
+
+	 char **extras;
+	 int nExtras;
+
+	 CACHEFORMAT cacheFormat;	// [ONEFILE/ONEFILEPERFRAME]
+	 unsigned int fps;			// [frame/sec]
+	 unsigned int duration;		// [frame]
+	 int start;					// [tick]
+	 int end;					// [tick]
+	 unsigned int mayaTPF;		// [seconds]
+	 int numberOfChannels;		// [int]
+	 int numberOfElements;		// [int]
+
+	 int startFrame;
+	 int currentFrame;
+	 int frameIncrement;
+
 }Info;
-
-
-//typedef struct Channel
-//{
-//	char *name;
-//	char *attribute;
-//	int type;
-//	int numberOfElements;
-//	void *elements;			// DBLA elements: double array; FVCA elements: float triples' array  
-//}Channel;
 
 typedef struct Header
 {
@@ -149,38 +146,21 @@ typedef struct Header
     unsigned int etimSecondPart;
 } Header;
 
-ChannelName cName;
-ChannelName aName;
 Info info;
 
-static const char *channelsName[]={"_id","_count","_birthTime","_position","_lifespannPP","_finalLifespanPP"
-							,"_velocity","_acceleration","_worldPosition","_worldVelocity","_worldVelocityInObjectSpace"
-							,"_mass","_age","_rgbPP","_opacityPP","_radiusPP"};
-
-static const char *attributesName[]={"id","count","birthTime","position","lifespannPP","finalLifespanPP"
+static const char *names[]={"id","count","birthTime","position","lifespanPP","finalLifespanPP"
 							,"velocity","acceleration","worldPosition","worldVelocity","worldVelocityInObjectSpace"
 							,"mass","age","rgbPP","opacityPP","radiusPP"};
 
-static int delta;
+char *mayaCacheFileName;
 
-/* 
-	particleSysName [MAYA particle system name]
-	fileName [file name, without extension] 
-	cacheType [ONEFILE/ONEFILEPERFRAME] 
-	option [POSITION/POSITIONVELOCITY/ALLCHANNEL] 
-	fps [frame per second,example 25/30]
-	start [frame] 
-	end [frame]
-*/
-void init(char *particleSysName,char *fileName, CACHEFORMAT cacheFormat, CACHEOPTION option, unsigned int fps, double start, double end);
+void enableChannel(CHANNELTYPE channelActive, ENABLEDISABLED ea);
 
-void writeMayaNCacheHeader();
+void init(char *particleSysName,char *fileName, CACHEFORMAT cacheFormat, int numberOfElements, unsigned int fps, double start, double end,char *extras[], int nExtras);
 
-// frame [actual frame], channels [array of channels]
-void writeMayaNCacheBlock(int frame, Channel *channels);
+void assignChannelValues(CHANNELTYPE channelActive, void *sourceValues);
 
-//channels [array of channels]
-void writeMayaNCacheChannel(Channel * channel);
+void mayaCache();
 
 void closeMayaNCacheFile();
 

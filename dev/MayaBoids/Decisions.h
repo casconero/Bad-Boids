@@ -2,7 +2,7 @@
 #ifndef _DECISION_H_
 #define _DECISION_H_
 
-#include "RulesSetup.h"
+#include "CpuRules.h"
 
 void decisionComputation(Vector *desiresVector,Boid *currentBoid, Vector *decisionVector);
 

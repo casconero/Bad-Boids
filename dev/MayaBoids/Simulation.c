@@ -1,33 +1,37 @@
 #include "Simulation.h"
 
-
 // functions declaration
 void compute();
 void updateBoids();
 void sortingRules();
-
 void boidInitialization(Boid *boid, int id,double width, double depth, double high,Vector * startingV,Vector * startingA);
 void cachingData(Channel* channels);
 void freeChannel(Channel* channels);
 void leaderInit(double radius);
 
 /********************************************/
-void simulationInit(SimulationParameters *simParams, RulesParameters *applyingRules,InfoCache *cache, int numberOfDesires)
+void initSim2(SimulationParameters *simParams, RulesParameters *applyingRules,InfoCache *cache, int numberOfDesires,Vector *leaderPosition, Vector *target)
+{
+	initSim(simParams, applyingRules, cache, numberOfDesires, leaderPosition);
+	copyVector(target,targetPoint);
+}
+
+void initSim(SimulationParameters *simParams, RulesParameters *applyingRules,InfoCache *cache, int numberOfDesires,Vector *leaderPosition)
 {
 	int j;
-	unsigned long i;
+	unsigned long int i;
 	Vector acc,vel;
-		
-	firstTime=TRUE;
+
 	abortSimulation=FALSE;
 	nDesires=numberOfDesires;
 	dt=1/(double)(simParams->fps);
 	simulationProgress = 0;
 	leader=NULL;
 
+	// initializing cache files and rules settings
 	memcpy(&cacheFileOption,cache,sizeof(InfoCache));
 	rParameters=(RulesParameters**)malloc(nDesires*sizeof(RulesParameters*));
-	
+
 	for(j=0;j<nDesires;j++)
 	{
 		rParameters[j]=(RulesParameters*)malloc(sizeof(RulesParameters));
@@ -36,35 +40,56 @@ void simulationInit(SimulationParameters *simParams, RulesParameters *applyingRu
 
 	memcpy(&simParameters,simParams,sizeof(SimulationParameters));
 	actions=(Action*)malloc(sizeof(Action)*nDesires);
-	boidSet=(Boid *)malloc(sizeof(Boid)*simParameters.numberOfBoids);	
-	
 
-	if((nDesires>3) && (applyingRules[FOLLOWRULE].enabled))
-	{
-		leader=(Boid*)malloc(sizeof(Boid)*(unsigned)(simParameters.fps*simParameters.lenght));
-		leaderInit(20);
-	}
-	
+	// preparing the boids set
+	boidSet=(Boid *)malloc(sizeof(Boid)*simParameters.numberOfBoids);	
+
+	// initializing boids starting position and starting velocity (only when no external boids passed to the simulation dll)
 	randomVector(&acc, simParams->maxAcceleration, 0, 0);
 	randomVector(&vel, simParams->maxVelocity, 0, 0);
 	
+	// initializing and filling the kdtree structure
 	k3=kd_create(3);
 	for(i=0; i<simParameters.numberOfBoids; i++)
 	{
 		boidInitialization(&boidSet[i],i+1, 20, 10, 5, &vel, &acc);
+		boidSet[i].mass=10;
 		kd_insert3(k3,boidSet[i].currentPosition.x, boidSet[i].currentPosition.y, boidSet[i].currentPosition.z, &boidSet[i]);
-		
 	}
 
+	//initializing leader
+	if(leaderPosition!=NULL)
+	{
+		// maya interface passed the leader to follow
+		unsigned int k;
+		Vector nullVector;
+		unsigned int frames=(unsigned int)ceil(simParameters.fps * simParameters.lenght);
+
+		initVector(&nullVector);
+		leader=(Boid *)malloc(sizeof(Boid)*frames);
+
+		// the leader only need the position ,so the others variables will be not setup
+		for (k=0;k<frames;k++)
+			initBoid(&leaderPosition[k],&nullVector,&nullVector,0,0,0,0,-1,&leader[k]);
+	}
+	else
+		if(applyingRules[FOLLOWRULE].enabled)
+		{
+			//automaticly generate a leader to follow
+			leader=(Boid*)malloc(sizeof(Boid)*(unsigned)(simParameters.fps*simParameters.lenght));
+			leaderInit(20);
+		}
 	initDesires(leader);
-	//sortingRules();
 }
 
 // update simulation
-void  update()
+int  update()
 {
 	unsigned int simulationLenght,progress;
+	int exitValue;
 	
+	int test=0;
+
 	progress=0;
 	simulationLenght=(unsigned int)ceil(simParameters.fps * simParameters.lenght);
 
@@ -92,7 +117,7 @@ void  update()
 
 		//advance to the next frame
 		progress++;
-
+		test++;
 		// free channels memory
 		freeChannel(channels);
 	}
@@ -104,16 +129,27 @@ void  update()
 	{
 		printf("Simulation interrupted\n");
 		deleteData();
+		exitValue=INTERRUPTED_SIM;
 	}
 	// restoring abortSimulation flag
 	abortSimulation=FALSE;
+	exitValue=SUCCESS_SIM;
 
 	// free resources
 	free(boidSet);	
 	kd_free(k3);
+
+	return exitValue;
 }
 
+
+
+
+
 /********************************************/
+/*											*/
+/*		private functions implementation	*/
+/*											*/
 /********************************************/
 void sortingRules()
 {
@@ -307,7 +343,7 @@ void leaderInit(double radius)
 	angle=0;
 	delta=(double)(360.0/totalLength);
 
-	leader=(Boid *)malloc((unsigned int)ceil(simParameters.fps * simParameters.lenght)* sizeof(Boid));
+	//leader=(Boid *)malloc((unsigned int)ceil(simParameters.fps * simParameters.lenght)* sizeof(Boid));
 
 	for(j=0;j<totalLength;j++)
 	{

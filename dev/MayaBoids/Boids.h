@@ -4,9 +4,10 @@
 #ifndef BOIDS_H_INCLUDED
 #define BOIDS_H_INCLUDED
 
-#include "RulesSetup.h"
+#include "CpuRules.h"
 #include "Simulation.h"
 #include <stdio.h>
+#include <MayaNCache.h>
 
 
 #ifdef DLL
@@ -24,15 +25,23 @@ extern "C" {
 	Rules applyingRules, rules' list (e.g. Cohesion, Alignment and so on ) with their parameters . List's lenght= numberOfDesires
 	double *progressBarProgress, pointer to a double variable. Storing the simulation progress (%)
 	*/
-	void DLL_EXPORT boidSim(int numberOfDesires, RulesParameters *applyingRules, SimulationParameters simParams,InfoCache infoCache);
+	void DLL_EXPORT boidInit(int numberOfDesires, RulesParameters *applyingRules, SimulationParameters simParams,InfoCache infoCache,Vector *leaderPosition);
 	
-	int DLL_EXPORT getProgression();
-
-	void DLL_EXPORT stopSim();
-
 	void DLL_EXPORT loadParticles(ParticlesParameters *pariclesList, int nParticles);
 
 	void DLL_EXPORT loadLeader(Vector *leaderPosition, int nFrame);
+
+	int DLL_EXPORT startSim();
+	
+	void DLL_EXPORT stopSim();
+
+	int DLL_EXPORT getProgression();
+	
+	
+
+	
+
+	
 
 #ifdef __cplusplus
 }

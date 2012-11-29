@@ -10,18 +10,19 @@ void copyBoid(const Boid *boidSource, Boid *boidDestination)
 // single boid initialization
 void initBoid(const Vector *p, const Vector *v, const Vector *a, double speed, double acceleration, double mForce, double bMass, long int id, Boid *boid)
 {
-	copyVector(p, &(boid->currentPosition));
-	copyVector(p, &(boid->nextPosition));
-	copyVector(v, &(boid->currentVelocity));
-	copyVector(v, &(boid->nextVelocity));
-	copyVector(a, &(boid->acceleration));
-
+	
 	boid->id = id;
 	boid->maxSpeed = speed;
 	boid->maxAcceleration = acceleration;
 	// for future implementation
 	boid->maxForce = acceleration;
-	boid->mass = bMass;
+	boid->mass = (float)bMass;
+
+	copyVector(p, &(boid->currentPosition));
+	copyVector(p, &(boid->nextPosition));
+	copyVector(v, &(boid->currentVelocity));
+	copyVector(v, &(boid->nextVelocity));
+	copyVector(a, &(boid->acceleration));
 }
 
 

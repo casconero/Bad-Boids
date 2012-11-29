@@ -22,6 +22,7 @@ class boidsBrain : public MPxNode
 		static MObject startFrame;		// [int]
 
 		static MObject particleSystem;		// [mess]
+		static MObject leader;				// [mess]		
 		static MObject boidsNumber;			// [int]
 		// export params
 		static MObject logFilePath;			// [char *]

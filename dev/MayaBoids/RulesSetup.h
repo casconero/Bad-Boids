@@ -2,35 +2,28 @@
 #define _RULESETUP_H_
 
 #include "Boolean.h"
-#include <kdtree.h>					// generic kdtree implementation
-#include <Boid.h>		// Boid struct and operations
-
-//#include "../KDTree/kdtree.h"			// generic kdtree implementation
-//#include "../Mathematics/Boid.h"		// Boid struct and operations
-//#include "../Mathematics/Vector.h"		// Vector struct and operations
+#include "..\Mathematics\DataStructures.h"
 
 #define PRECEDENCE int
-
+#define OKCUDA 0
+#define NO_CUDA_DEVICE -100
+#define CUDA_DEVICE_NOT_SUPPORTED -99
 #define VISIBILITY BOOL
 #define VISIBILITYON TRUE
 #define VISIBILITYOFF FALSE
 
 #define RULE int
-#define RULESAVAILABLE 3
-#define COHESIONRULE 0
-#define ALIGNMENTRULE 1
-#define SEPARATIONRULE 2
-#define FOLLOWRULE 3
-#define WANDERRULE 4
+#define RULESAVAILABLE 6
+#define COHESIONRULE 0			// COHESION RULE (BASIC BOID BEHAVIOUR)
+#define ALIGNMENTRULE 1			// ALLIGNEMENT RULE (BASIC BOID BEHAVIOUR)
+#define SEPARATIONRULE 2		// SEPARATION RULE (BASIC BOID BEHAVIOUR)
+#define REACHRULE 3				// REACH TARGET RULE (BOID MOVES TO TARGET)
+#define FOLLOWRULE 4			// FOLLOW LEADER RULE (BOID FOLLOWS A LEADER)
+#define WANDERRULE 5			// WANDERER RULE ("DESCRIPTION"?)
 
-static const char *rulesName[]={"cohesionRule","alignmentRule","separationRule","wanderRule","followRule"};
-
-typedef struct kdtree Kdtree;
-typedef struct kdres Kdres;
-
-typedef void(* Action)(Kdres *, Boid *, Vector *);
-
-
+#define USEGPU int
+#define GPU 1
+#define CPU 2
 
 typedef struct rulesParameters
 {
@@ -53,6 +46,7 @@ typedef struct simulationParameters
 	double maxVelocity;
 	double maxAcceleration;
 	BOOL simplifiedLocomotion;
+	USEGPU master;
 }SimulationParameters;
 
 typedef struct particlesParameters
@@ -63,10 +57,9 @@ typedef struct particlesParameters
 	double maxSpeed;
 	double maxAcceleration;
 	double maxForce;
-
 }ParticlesParameters;
 
-Action *actions;
+
 RulesParameters **rParameters;
 int nDesires;
 

@@ -12,7 +12,8 @@ void alignmentRule( Kdres *nearestBoidsSet, Boid * currentBoid, Vector * outputV
 void separationRule( Kdres *nearestBoidsSet, Boid * currentBoid, Vector * outputVector);
 
 
-// Extended rukes
+// Extended rules
+void reachRule( Kdres *nearestBoidsSet, Boid * currentBoid, Vector * outputVector);
 void followRule(Kdres *nearestBoidsSet, Boid * currentBoid, Vector * steer);
 void wanderRule(Kdres *nearestBoidsSet, Boid * currentBoid, Vector * steer);
 
@@ -37,6 +38,8 @@ void initDesires(Boid *lb)
 			case SEPARATIONRULE:
 				actions[j]=separationRule;
 				break;
+			case REACHRULE:
+				actions[j]=reachRule;
 			case WANDERRULE:
 				break;
 			case FOLLOWRULE:
@@ -56,7 +59,6 @@ void initDesires(Boid *lb)
 void desiresComputation(Kdtree *kd, Boid * currentBoid, Boid * lBoid, Vector *desiresVector)
 {
 	int i;
-	//leaderBoid=lBoid;
 	// execute "Desires" 
 	for(i=0;i<nDesires;i++)
 	{
@@ -240,8 +242,17 @@ void separationRule( Kdres *nearestBoidsSet, Boid * currentBoid, Vector * steer)
 }
 
 // Extended Rules
+// Reach 
+// moving towards a static point
+void reachRule(Kdres *nearestBoidsSet, Boid * currentBoid, Vector * outputVector)
+{
+	initVector(outputVector);
+	steering(currentBoid, arrivalPoint, outputVector);
+	multiply(outputVector, rParameters[REACHRULE]->ruleFactor,outputVector);	
+}
 
 // Follow
+// following a moving leader
 void followRule(Kdres *nearestBoidsSet, Boid * currentBoid, Vector * outputVector)
 {
 	initVector(outputVector);

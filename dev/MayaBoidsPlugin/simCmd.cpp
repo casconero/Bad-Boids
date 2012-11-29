@@ -3,17 +3,9 @@
 // DLL includes
 #include "../MayaBoids/Boids.h"
 
-// static attributes recall
-MCallbackId simulateBoids::idcb;
 
-typedef struct dllData
-{
-	int nD;
-	RulesParameters *applyingRules;
-	SimulationParameters *simParams;
-	InfoCache *infoCache;
-	int	*progressBarValue;
-}DLLData;
+// static attributes recall
+// MCallbackId simulateBoids::idcb;
 
 // creating threads tasks
 void ThreadsCreator(void *data, MThreadRootTask *root);
@@ -24,6 +16,12 @@ MThreadRetVal tProgressBar(void *data);
 // threaded dll simulation
 MThreadRetVal tBoidsDll(void *data);
 
+//int cmdResult;
+
+typedef struct dllData
+{
+	int result;
+}DLLData;
 
 void * simulateBoids::creator() { return new simulateBoids; }
 
@@ -50,7 +48,7 @@ MStatus simulateBoids::doIt( const MArgList& args )
 
 	
     /****************************************
-	*	costruzione strutture di passaggio  *
+	*	building thread/dll data structure  *
 	****************************************/
 
 	InfoCache infoCache;
@@ -58,12 +56,13 @@ MStatus simulateBoids::doIt( const MArgList& args )
 	RulesParameters *applyingRules;
 	double progressBar=0;
 	double aov=pi/3;
-	int i,numberOfDesires=4;
-
+	int i,numberOfDesires=0;
+	
 	// params retrievement
 	MSelectionList sel;
 	MObject node;
 	MFnDependencyNode nodeFn;
+	MFnTransform locatorFn;
 	MPlug plug;
 
 	// simulation params
@@ -74,31 +73,49 @@ MStatus simulateBoids::doIt( const MArgList& args )
 	// export params
 	MString logFilePathValue;		// [char *]
 	MString logFileNameValue;		// [char *]
-	//char * logFilePathValue;		// [char *]
-	//char * logFileNameValue;		// [char *]
 	int logFileTypeValue;			// 0 = nCache; 1 = log file; 2 = XML; 
-	// rules params
-	setRuleVariables(alignment);
-	setRuleVariables(cohesion);
-	setRuleVariables(separation);
-	setRuleVariables(follow);
-	
 	// locomotion params
-	int locomotionModeValue;				// [int]
+	int locomotionModeValue;		// [int]
 	double maxSpeedValue;			// [double]
-	double maxForceValue;	// [double]
-	// double mass=1;					// [double]
+	double maxForceValue;			// [double]
+
+	// double mass=1;				// [double]
+
+	MTime currentTime, maxTime;
+	MPlug plugX, plugY, plugZ;
+	double tx, ty, tz;
+	int frameLength ;
+	Vector * leader = NULL;
+
+	MStatus leaderFound=MStatus::kFailure;
 
 	MGlobal::getActiveSelectionList(sel);
 	for ( MItSelectionList listIter(sel); !listIter.isDone(); listIter.next() )
 	{
 		listIter.getDependNode(node);
-		nodeFn.setObject(node);
+		switch(node.apiType())
+		{
+			case MFn::kTransform:
+				// get locator transform to follow
+				leaderFound=locatorFn.setObject(node);
+				cout << locatorFn.name().asChar() << " is selected as locator" << endl;
+				break;
+			case MFn::kPluginDependNode:
+				nodeFn.setObject(node);
+				cout << nodeFn.name().asChar() << " is selected as brain" << endl;
+				break;
+			default:
+				break;
+		}
+		cout<< node.apiTypeStr()<<endl;
 	}
-	cout << nodeFn.name().asChar() << " is selected" << endl;
-	
-	// plug = nodeFn.findPlug("simulationLength");
-	// plug.getValue(dblValue);
+
+	// rules params
+	setRuleVariables(alignment);
+	setRuleVariables(cohesion);
+	setRuleVariables(separation);
+	setRuleVariables(follow);
+
 	getPlugValue(simulationLength);
 	getPlugValue(framesPerSecond);
 	getPlugValue(startFrame);
@@ -113,8 +130,49 @@ MStatus simulateBoids::doIt( const MArgList& args )
 	getPlugValue(maxForce);
 	getTypePlugValue(logFilePath);
 	getTypePlugValue(logFileName);
+		// counting active rules number
+	if(alignmentActiveValue)
+		numberOfDesires++;
+	if(cohesionActiveValue)
+		numberOfDesires++;
+	if(separationActiveValue)
+		numberOfDesires++;
+	if(followActiveValue)
+		numberOfDesires++;
 
-	MGlobal::displayInfo(logFilePathValue);
+
+	currentTime = MTime((double)startFrameValue);														// MAnimControl::minTime();
+	maxTime = MTime((double)(startFrameValue + (simulationLengthValue * framesPerSecondValue)));		// MAnimControl::maxTime();
+	cout << "time unit enum (6 is 24 fps): " << currentTime.unit() << endl;	
+	plugX = locatorFn.findPlug( MString( "translateX" ), &status );
+	plugY = locatorFn.findPlug( MString( "translateY" ), &status );
+	plugZ = locatorFn.findPlug( MString( "translateZ" ), &status );
+	frameLength = simulationLengthValue * framesPerSecondValue;
+	
+	if(leaderFound==MS::kSuccess)
+	{
+		leader = new Vector[frameLength];	
+		while ( currentTime < maxTime )
+		{
+			{
+				int index = (int)currentTime.value() - startFrameValue;
+				/*
+				MGlobal::viewFrame(currentTime);
+				pos = locatorFn.getTranslation(MSpace::kWorld);
+				cout << "pos: " << pos.x << " " << pos.y << " " << pos.z << endl;
+				*/
+				status = plugX.getValue( tx, MDGContext(currentTime) );
+				status = plugY.getValue( ty, MDGContext(currentTime) );
+				status = plugZ.getValue( tz, MDGContext(currentTime) );
+
+				leader[index].x = tx;
+				leader[index].y = ty;
+				leader[index].z = tz;
+				//cout << "pos at time " << currentTime.value() << " has x: " << tx << " y: " << ty << " z: " << tz << endl;
+				currentTime++;
+			}	
+		}
+	}
 
 	simParams.fps=framesPerSecondValue;
 	simParams.lenght=simulationLengthValue;
@@ -123,12 +181,25 @@ MStatus simulateBoids::doIt( const MArgList& args )
 	simParams.maxVelocity=maxSpeedValue;
 	simParams.simplifiedLocomotion=TRUE;
 
-	applyingRules=(RulesParameters *)malloc(numberOfDesires*sizeof(RulesParameters));
 
-	printf("Number of desires = %d\n",numberOfDesires);
+	
+	
+	applyingRules=new RulesParameters[numberOfDesires];
+	
 
+	// cache settings
 	MString saveString;
 	saveString = logFilePathValue+"/"+logFileNameValue;
+	infoCache.fileName=new char[saveString.length()+1];
+	memcpy(infoCache.fileName,saveString.asChar(),sizeof(char)*(saveString.length()+1));
+	infoCache.cacheFormat=ONEFILE;
+	infoCache.fps=framesPerSecondValue;
+	infoCache.start=startFrameValue/framesPerSecondValue;
+	infoCache.end=simulationLengthValue+infoCache.start;	
+	infoCache.loging=FALSE;
+	infoCache.option=POSITIONVELOCITY;
+	infoCache.particleSysName="BoidsNParticles";
+	infoCache.saveMethod=MAYANCACHE;
 
 	for(i=0;i<numberOfDesires;i++)
 	{
@@ -179,41 +250,32 @@ MStatus simulateBoids::doIt( const MArgList& args )
 	}
 	
 
-	infoCache.cacheFormat=ONEFILE;
-	infoCache.fps=framesPerSecondValue;
-	infoCache.start=startFrameValue/framesPerSecondValue;
-	infoCache.end=simulationLengthValue+infoCache.start;	
-	infoCache.loging=FALSE;
-	infoCache.option=POSITIONVELOCITY;
-	infoCache.particleSysName="BoidsNParticles";
-	infoCache.saveMethod=MAYANCACHE;
+	// initializing simulation parameters
+	boidInit(numberOfDesires, applyingRules, simParams , infoCache, leader);
 
-	infoCache.fileName=(char*)malloc(sizeof(char)*(saveString.length()+1));
-	for(unsigned int j=0;j<saveString.length()+1;j++)
-		infoCache.fileName[j]=saveString.asChar()[j];
-
-	DLLData data;
-	data.nD=numberOfDesires;
-	data.infoCache=&infoCache;
-	data.simParams=&simParams;
-	data.applyingRules=applyingRules;
-	
+	DLLData datadll;
+	// preparing threads pool
 	status = MThreadPool::init();
-	
 	
 	if (status==MStatus::kSuccess)
 	{
-		MThreadPool::newParallelRegion(ThreadsCreator, &data);
+		MThreadPool::newParallelRegion(ThreadsCreator, &datadll);
 		setResult( "Command executed!\n" );
 		CHECK_MSTATUS(MProgressWindow::endProgress());
 		MThreadPool::release();
 	}
-	
-	free(infoCache.fileName);
-	free(applyingRules);
-	MThreadPool::release();
-	
 
+	switch(datadll.result)
+	{
+	case 0:
+		status=MS::kSuccess;
+		break;
+
+	default:
+		status=MS::kFailure;
+	}
+
+	MThreadPool::release();
 	return status;
 }
 
@@ -228,7 +290,6 @@ void ThreadsCreator(void *data, MThreadRootTask *root)
 MThreadRetVal tProgressBar(void *data)
 {
 	MStatus status=MS::kSuccess;
-	//MString statusString;
 
 	if(!MProgressWindow::reserve())
 	{
@@ -238,68 +299,41 @@ MThreadRetVal tProgressBar(void *data)
 	}
 
 	// Set up and print progress window state
-	CHECK_MSTATUS(MProgressWindow::setProgressRange(PROGRESSBARMINVALUE, PROGRESSBARMAXVALUE));
-	CHECK_MSTATUS(MProgressWindow::setTitle("Boids Progress"));
-	CHECK_MSTATUS(MProgressWindow::setInterruptable(true));
+	MProgressWindow::setProgressRange(PROGRESSBARMINVALUE, PROGRESSBARMAXVALUE);
+	MProgressWindow::setTitle("Boids Progress");
+	MProgressWindow::setInterruptable(true);
 	MProgressWindow::setProgressStatus("Simulation Progress");
-	CHECK_MSTATUS(MProgressWindow::setProgress(PROGRESSBARMINVALUE));
-	CHECK_MSTATUS(MProgressWindow::startProgress());
+	MProgressWindow::setProgress(PROGRESSBARMINVALUE);
+	MProgressWindow::startProgress();
 
 	while((MProgressWindow::progress()<PROGRESSBARMAXVALUE)&&(!MProgressWindow::isCancelled()))
 	{	
-		/*statusString ="Progress " + MProgressWindow::progress();	
-		CHECK_MSTATUS(MProgressWindow::setProgressStatus(statusString));*/
-
 		int prog=getProgression();
 		int progV=MProgressWindow::progress();
 		while(prog>=progV+PROGRESSBARADVANCEVALUE)
 		{
-			CHECK_MSTATUS(MProgressWindow::advanceProgress(PROGRESSBARADVANCEVALUE));	
+			MProgressWindow::advanceProgress(PROGRESSBARADVANCEVALUE);	
 			progV+=PROGRESSBARADVANCEVALUE;
 		}
 		if(progV>=PROGRESSBARMAXVALUE)
-			CHECK_MSTATUS(MProgressWindow::setProgress(PROGRESSBARMAXVALUE));	
+			MProgressWindow::setProgress(PROGRESSBARMAXVALUE);	
 		
 		Sleep(PROGRESSBARSLEEPTIME);
 	}
 
 	if (MProgressWindow::isCancelled()) 
 	{
-		//CHECK_MSTATUS(MProgressWindow::endProgress());
 		MGlobal::displayInfo("Progress interrupted!");
 		stopSim();
 	}
-	//else
-		//CHECK_MSTATUS(MProgressWindow::endProgress());
-
+	
 	return (MThreadRetVal)0;
 }
 
+// calling the boids simulation function
 MThreadRetVal tBoidsDll(void *data)
 {
-	DLLData * app=(DLLData*)data;
-	SimulationParameters sp;
-	InfoCache iC;
-
-	// BUILDING DLL'S PARAMETERS
-	sp.fps=app->simParams->fps;
-	sp.lenght=app->simParams->lenght;
-	sp.maxAcceleration=app->simParams->maxAcceleration;
-	sp.maxVelocity=app->simParams->maxVelocity;
-	sp.numberOfBoids=app->simParams->numberOfBoids;
-	sp.simplifiedLocomotion=app->simParams->simplifiedLocomotion;
-	
-	iC.cacheFormat=app->infoCache->cacheFormat;
-	iC.fps=app->infoCache->fps;
-	iC.start=app->infoCache->start;
-	iC.end=app->infoCache->end;
-	iC.loging=app->infoCache->loging;
-	iC.option=app->infoCache->option;
-	iC.saveMethod=app->infoCache->saveMethod;
-	iC.fileName=app->infoCache->fileName;
-	iC.particleSysName=app->infoCache->particleSysName;
-
-	//starting simulation
-	boidSim(app->nD, app->applyingRules, sp ,iC);
+	DLLData * d=(DLLData*)data;
+	d->result=startSim();
 	return (MThreadRetVal)0;
 }

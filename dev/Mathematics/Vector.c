@@ -5,32 +5,38 @@
 *           inline declaration              *
 *********************************************
 */
-// inizializza a 0 un vettore
-void initVector(Vector *v){ memset(v, 0, sizeof(Vector)); };
-void copyVector(const Vector *inputVector, Vector *outputVector){ memmove(outputVector, inputVector, sizeof(Vector)); };
+
+void initVector(Vector *v){ memset(v, 0, sizeof(Vector)); }
+
+void copyVector(const Vector *inputVector, Vector *outputVector){ memcpy(outputVector, inputVector,sizeof(Vector));}
+
 void subVector(Vector *v1, Vector *v2, Vector *v1minusv2)
 {
 	v1minusv2->x = v1->x - v2->x;
 	v1minusv2->y = v1->y - v2->y;
 	v1minusv2->z = v1->z - v2->z;
 }
+
 void addVector(Vector *v1, Vector *v2, Vector *v1plusv2)
 {
 	v1plusv2->x = v1->x + v2->x;
 	v1plusv2->y = v1->y + v2->y;
 	v1plusv2->z = v1->z + v2->z;
 }
+
 double magnitude(const Vector *v)
 {
 	double value = v->x * v->x + v->y * v->y + v->z * v->z;
 	return sqrt(value);
 }
+
 void multiply(Vector *vettore, double m, Vector *outputVector)
 {
 	outputVector->x = vettore->x * m;
 	outputVector->y = vettore->y * m;
 	outputVector->z = vettore->z * m;
 }
+
 void normalize(Vector *v)
 {
 	double mag = magnitude(v);

@@ -40,7 +40,9 @@ global proc string boidsBrain()
     string $nodeName = `createNode boidsBrain`;
 	string $pts = getDefault("nParticle");
 	print ("default: " + $pts + "\n");
-	connectAttr ($pts + ".message") ($nodeName + ".particleSystem");
+	connectAttr ($pts + ".nodeState") ($nodeName + ".particleSystem");
+	addAttr -at bool -ln "pathScriptjob";
+	addAttr -at message -ln "leaderMessage";
 	return $nodeName;
     // $nodeName = `rename $nodeName "bbCD#"`;
 }
@@ -125,8 +127,8 @@ global proc updateBoidCache( string $nodeName, string $ptcName)
 	int $cEnd = $len * $fps;
 	string $cFilePath = `getAttr ($nodeName + ".logFilePath")`;
 	string $cFileName = `getAttr ($nodeName + ".logFileName")`;
-	string $mcPath = $cFilePath + $cFileName + ".mc";
-	string $xmlPath = $cFilePath + $cFileName + ".xml";
+	string $mcPath = $cFilePath + "/" + $cFileName + ".mc";
+	string $xmlPath = $cFilePath + "/" + $cFileName + ".xml";
 	if ((`filetest -f $mcPath`) && (`filetest -f $xmlPath`)){
 		string $cName = `connectionInfo -sfd ($ptcName + ".playFromCache")`;
 		string $cNameToken[];
@@ -151,36 +153,45 @@ global proc updateBoidCache( string $nodeName, string $ptcName)
 // proc will launch boids simulation
 global proc launchSimCmd( string $nodeName )
 {
-	print ($nodeName + " to be simulated\n");
 	select -r $nodeName;
-	print ($nodeName + " selected; launching sim\n");
+	if (`getAttr ($nodeName + ".followActive")`){
+		int $sel = `optionMenu -q -ni leaderSel`;
+		if ($sel > 0){
+			select -add `optionMenu -q -v leaderSel`;
+		} else {
+			string $mess = "No Locators to be used as Leader to follow were found.\n";
+			$confirm = `confirmDialog -t "Follow Rule Alert" -b "OK" -db "OK" -m $mess -icn "warning"`;
+		}
+	}
+	print ($nodeName + " is passed to simulation\n");
 	
 	// string $nodeName = "boidsBrainShape1";
 	string $confirm = "Yes";
 	string $ptSys = `connectionInfo -sfd ($nodeName + ".particleSystem")`;
-	$ptSys = `substitute ".message" $ptSys ""`;
+	$ptSys = `substitute ".nodeState" $ptSys ""`;
 	string $logPath = `getAttr ($nodeName + ".logFilePath")`;
 	$logPath += ("/" + `getAttr ($nodeName + ".logFileName")`);
 	string $mcPath = $logPath + ".mc";
 	string $xmlPath = $logPath + ".xml";
 	if ((`filetest -f $mcPath`) || (`filetest -f $xmlPath`)) {
-		print "inside filecheck/n";
 		if ((`filetest -w $mcPath`) && (`filetest -w $xmlPath`)) {
-			print "writable\n";
 			string $mess = "A file with that name already exists. If you proceed, it will be overwritten.\nOccasionally, that may cause Maya to crash or freeze (this will be fixed).\nDo you want to overwrite it?";
 			$confirm = `confirmDialog -t "Overwrite Alert" -m $mess -ma "center" -b "Yes" -b "No" -db "No" -cb "No" -ds "The simulation was aborted" -icn "warning"`;
 		} else {
-			print "not writable\n";
 			string $mess = "A cache file with that name already exists and can't be overwritten, as it is read-only\nThe simulation will be aborted.";
 			$confirm = `confirmDialog -t "Overwrite Alert" -b "OK" -db "OK" -m $mess -icn "warning"`;
 		}
 	}
 	if($confirm=="Yes"){
-		simulateBoids;
-		updateBoidCache($nodeName, $ptSys);
-		print "simulation done\n";
+		int $result = `simulateBoids`;
+		if($result==0){
+			updateBoidCache($nodeName, $ptSys);
+			print ("simulation done (code: " + $result + ")\n");
+		}else{
+			print "simulation interrupted during computation\n";
+		}
 	} else {
-		print "simulation aborted\n";
+		print "simulation aborted before launch\n";
 	}
 }
 

@@ -13,20 +13,13 @@ global proc string[] getRuleAttributes(string $typ){
 global proc makeSimCmdButton( string $nodeName )
 {
 	string $nodeName = substring($nodeName,1,size($nodeName)-1);
-	// print "create\n";
-	// print( "node: " + $nodeName + "\n");
-	
 	columnLayout -cat "both" 20 -adj true; // -adjustableColumn true;
 		button -label "Launch Simulation" -h 32 -command ("launchSimCmd " + $nodeName) simLauncher;
 	setParent ..;
-	
 }
 global proc updateSimCmdButton( string $nodeName )
 {
 	string $nodeName = substring($nodeName,1,size($nodeName)-1);
-	// print "update\n";
-	// print( "node: " + $nodeName +"\n");
-	
     button -e -c ("launchSimCmd " + $nodeName) simLauncher; 
 }
 
@@ -37,39 +30,106 @@ global proc int bbBrowseDir(string $path, string $fileType)
 }
 global proc makePathBrowser( string $attrName )
 {
-	print ("make called\n");
-	string $wsData = `workspace -q -fn`;
-	$wsData += ( "/" + `workspace -q -fn -fre "diskCache"`);
+	print ("makePathBrowser called | attribute passed: " + $attrName + "\n");
+	
 	rowLayout -nc 3;
 		text -l "Log File Path";
-		textField -tx $wsData logFilePathField;
+		textField logFilePathField;
 		symbolButton -image "navButtonBrowse.xpm" browser;
-	// print ( "workspace: " + $defaultWork + "/" + $defaultCache  + "\n");
-	// print ( "make, value assigned: " + `textField -q -tx logFilePathField`  + "\n");
-	setAttr -type "string" $attrName $wsData;
+	
     updatePathBrowser( $attrName );
 }
 global proc updatePathBrowser( string $attrName )
 {
-	print ("0: " + $attrName + "\n");
-	string $attrValue = `textField -q -tx logFilePathField`;
-	print ("1: " + $attrValue + "\n");
-	if($attrValue==""){
-		$attrValue = `getAttr $attrName`;
-		print ("2: " + $attrValue + "\n");
-		if($attrValue==""){
-			$attrValue = `workspace -q -fn`;
-			$attrValue += ( "/" + `workspace -q -fn -fre "diskCache"`);
-			print ("3: " + $attrValue + "\n");
-		}
-	}
-	setAttr -type "string" $attrName $attrValue;
+	string $buffer[], $nodeName;
+	tokenize $attrName "." $buffer;
+	$nodeName = $buffer[0];
+	// print ("updatePathBrowser called | attribute passed: " + $attrName + "\n");
 	
-	textField -e -tx `getAttr $attrName` logFilePathField;
+	string $attrValue = `getAttr $attrName`;
+	if($attrValue==""){
+		$attrValue = `workspace -q -fn`;
+		$attrValue += ( "/" + `workspace -q -fn -fre "diskCache"`);
+		setAttr -type "string" $attrName $attrValue;
+	}
+	textField -e -tx $attrValue logFilePathField;
+	
 	textField -e -cc ("setAttr -type \"string\" " + $attrName + " `textField -q -tx logFilePathField`;") logFilePathField;
 	symbolButton -e -c ("string $logPathField = `textField -q -tx logFilePathField`;workspace -dir $logPathField;fileBrowser( \"bbBrowseDir\", \"Select Log Directory\", \"\", 4 ); setAttr -type \"string\" " + $attrName + " `textField -q -tx logFilePathField`;") browser;
 	
-	// scriptJob -attributeChange $attrName ("textField -e -tx `getAttr " + $attrName + "` logFilePathField");
+	print ($buffer[0] + "\n");
+	print `getAttr($buffer[0] + ".pathScriptjob")`;
+	if(!`getAttr($buffer[0] + ".pathScriptjob")`){
+		scriptJob -attributeChange $attrName ("updatePathBrowser " + $attrName);
+		setAttr -l 1 ($buffer[0] + ".pathScriptjob") 1;
+		// print ("scriptjob attached to " + $buffer[0] + " and now set to: " + `getAttr($buffer[0] + ".pathScriptjob")` + "\n");
+	}
+}
+
+global proc leaderConnection( string $srcMenu, string $nodeName)
+{
+	print ($srcMenu + " : " + $nodeName + "\n");
+	int $sel = `optionMenu -q -ni leaderSel`;
+	if($sel){
+		$srcMenu = `optionMenu -q -v $srcMenu`;
+		connectAttr -f ($srcMenu + ".nodeState") ($nodeName + ".leaderMessage");
+	}
+}
+global proc makeLeaderSel( string $nodeName )
+{
+	// string $nodeName = substring($nodeName,1,size($nodeName)-1);
+	// print ("makeLeaderSel called | attribute passed: " + $nodeName + "\n");
+	rowLayout -nc 2;
+		text -l "Leader" leaderTxt;
+		optionMenu -w 190 leaderSel; // -changeCommand "print 1"
+		// button -l "Refresh Menu" -c ("updateLeaderSel " + $attrName) leaderSelRefresh;
+    updateLeaderSel( $nodeName /* + "." */ );
+}
+global proc updateLeaderSel( string $nodeName )
+{
+	string $nodeName = substring($nodeName,1,size($nodeName)-1);
+	print ("updateLeaderSel called | attribute passed: " + $nodeName + "\n");
+	
+	string $selected = "";
+	if (`connectionInfo -isDestination ($nodeName + ".leaderMessage")`){
+		$selected = `connectionInfo -sourceFromDestination ($nodeName + ".leaderMessage")`;
+		string $buffer[]; 
+		tokenize $selected "." $buffer;
+		$selected = $buffer[0];
+	}
+	print ("leaderSel: " + $selected + "\n");
+	
+	string $menuFullPath = `optionMenu -q -fpn leaderSel`;
+	
+	int $count = 1;
+	string $items[] = `optionMenu -q -ils leaderSel`;
+	string $item;
+	for($item in $items){
+		// print ($item + "\n");
+		deleteUI $item;
+	}
+	string $transforms[];
+	string $locators[] = `ls -typ "locator"`;
+	string $loc;
+	if(size($locators)>0){
+		int $sl;
+		for ($loc in $locators){
+			// print ($loc + "\n");
+			$transforms = `listRelatives -p $loc`;
+			$sl = ($transforms[0] == $selected)? $count : 1;
+			menuItem -label $transforms[0] -p leaderSel;
+			$count++;
+		};
+		text -e -en 1 leaderTxt;
+		optionMenu -e -en 1 -sl $sl leaderSel;
+		leaderConnection($menuFullPath,$nodeName);
+	} else {
+		text -e -en 0 leaderTxt;
+		optionMenu -e -en 0 leaderSel;
+	}
+	
+	optionMenu -e -cc ("leaderConnection " + $menuFullPath + " " + $nodeName) leaderSel;
+	// button -e -c ("updateLeaderSel " + $attrName) leaderSelRefresh;
 }
 
 global proc dimAttributes( string $ruleAttr, string $rule, string $nodeName )
@@ -78,11 +138,17 @@ global proc dimAttributes( string $ruleAttr, string $rule, string $nodeName )
 		// print ( $nodeName + " - " + $ruleAttr + "\n");
 		int $active = `getAttr ($nodeName + "." + $rule + "Active")`;
 		int $visibility = `getAttr ($nodeName + "." + $rule + "Visibility")`;
+		int $check;
 		if($ruleAttr=="Active"){
 			string $ruleAttributes[] = getRuleAttributes("attr");
 			string $rAttr;
 			for ($rAttr in $ruleAttributes){
 				if($rAttr!="Active") editorTemplate -dimControl $nodeName ($rule + $rAttr) (1 - $active);
+			}
+			if($rule=="follow" && `optionMenu -q -ex leaderSel` ){
+				int $check = `optionMenu -q -ni leaderSel`;
+				text -e -en ($active && $check) leaderTxt;
+				optionMenu -e -en ($active && $check) leaderSel;
 			}
 		}
 		editorTemplate -dimControl $nodeName ( $rule + "AngleOfView" ) (1 - ($active && $visibility));
@@ -91,16 +157,13 @@ global proc dimAttributes( string $ruleAttr, string $rule, string $nodeName )
 
 global proc AEboidsBrainTemplate( string $nodeName )
 {
-
 	string $rules[] = getRuleAttributes("rule");
 	string $ruleAttributes[] = getRuleAttributes("attr");
 	string $rule;
 	string $ruleAttr;
 	
-	// the following controls will be in a scrollable layout
 	editorTemplate -beginScrollLayout;
 
-		// add a bunch of common properties
 		editorTemplate -beginLayout "Simulation General Options" -collapse 0;
 			editorTemplate -addControl "simulationLength";
 			editorTemplate -addControl "framesPerSecond";
@@ -115,7 +178,10 @@ global proc AEboidsBrainTemplate( string $nodeName )
 				editorTemplate -beginLayout (capitalizeString($rule) + " Options") -collapse 1;
 				for ($ruleAttr in $ruleAttributes){
 					editorTemplate -l $ruleAttr -addControl ($rule + $ruleAttr) ("dimAttributes " + $ruleAttr + " " + $rule );
-					if($ruleAttr=="Weight") editorTemplate -addSeparator;
+					if($ruleAttr=="Weight"){
+						if($rule=="follow") editorTemplate -callCustom makeLeaderSel updateLeaderSel "";
+						editorTemplate -addSeparator;
+					}
 				}
 				editorTemplate -endLayout;
 			}
@@ -136,9 +202,6 @@ global proc AEboidsBrainTemplate( string $nodeName )
 		editorTemplate -beginLayout "Simulation" -collapse 0;
 			editorTemplate -callCustom "makeSimCmdButton" "updateSimCmdButton" ""; //$nodeName;
 		editorTemplate -endLayout;
-		
-		// include/call base class/node attributes
-		// AEdependNodeTemplate $nodeName;
 		
 		// add any extra attributes that have been added
 		editorTemplate -addExtraControls;

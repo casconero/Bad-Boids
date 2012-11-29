@@ -5,39 +5,33 @@
 #include <math.h>
 #include <string.h>
 #include "Utilities.h"
+#include "DataStructures.h"
 #include "../MayaBoids/Boolean.h"
 
 
-/*
-*********************************************
-*     "Vector" struct definition            *
-*********************************************
-*/
-
-// Vector struct definition
-typedef struct
-{
-    double x;
-    double y;
-    double z;
-} Vector;
-
 // Vector operations
+
+
+// vector initialization
 void initVector(Vector *v);
+
 // copia un vettore
 void copyVector(const Vector *inputVector, Vector *outputVector);
+
 // somma tra vettori
 void addVector(Vector *v1,Vector *v2,Vector *v1plusv2);
+
 // differenza tra vettori
 void subVector(Vector *v1,Vector *v2,Vector *v1minusv2);
+
 // moltiplicazione tra vettori
 void multiply(Vector *vettore, double m,Vector *outputVector);
+
 // calcolo del modulo del vettore
 double magnitude(const Vector *v);
+
 // normalizzazione del vettore
 void normalize(Vector *v);
-
-
 
 
 /*

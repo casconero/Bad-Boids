@@ -1,0 +1,46 @@
+///	param	$nodeName	-	the name of the node instance to display.
+
+global proc AEsetLocatorTemplate( string $nodeName )
+{
+	
+	// the following controls will be in a scrollable layout
+	editorTemplate -beginScrollLayout;
+
+		// add a bunch of common properties
+		editorTemplate -beginLayout "Controller Locator Attributes" -collapse 0;
+		editorTemplate -addControl "distance";
+		editorTemplate -addControl "distanceDirty";
+		editorTemplate -endLayout;
+		
+		// include/call base class/node attributes
+		AEdependNodeTemplate $nodeName;
+		
+		// add any extra attributes that have been added
+		editorTemplate -addExtraControls;
+		
+		// suppress extra attributes
+		/*
+		print("supppressing extra attr for: " + $nodeName + "\n");
+		string $attr[] = `editorTemplate -listExtraAttributes ("" + $nodeName)`;
+		print ("1st attempt: gathered array of size " + (size($attr)) + "\n");
+		int $i;
+		for($i=0; $i<size($attr); $i++)
+		{
+			print "entered loop:\n";
+			print($attr[$i] + "\n");
+			string $currentAttribute = `substring $attr[$i] (size($nodeName)+2) (size($attr[$i]))`;
+			print ($currentAttribute + "\n");
+			editorTemplate -suppress $currentAttribute;
+		}
+		*/
+
+	editorTemplate -endScrollLayout;
+}
+
+/*
+
+string $tokens[];
+int $numTokens = `tokenize $attr[$i] "." $tokens`;
+editorTemplate -suppress $tokens[$numTokens-1];
+
+*/

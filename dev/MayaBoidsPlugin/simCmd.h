@@ -7,6 +7,7 @@
 //#include <maya/MDagPath.h>
 #include <maya/MObject.h>
 //#include <maya/MFnDagNode.h>
+#include <maya/MFnTransform.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MPlug.h>
 //#include <maya/MDataHandle.h>
@@ -14,6 +15,7 @@
 #include <maya/MString.h>
 
 #include <maya/MTimerMessage.h>
+#include <maya/MTime.h>
 
 // pbar
 #include <maya/MProgressWindow.h>
@@ -22,6 +24,7 @@
 #include <winbase.h>
 #include <maya/MThreadPool.h>
 
+
 #define PROGRESSBARADVANCEVALUE 1
 #define PROGRESSBARMAXVALUE 100
 #define PROGRESSBARMINVALUE 0
@@ -29,8 +32,8 @@
 class simulateBoids : public MPxCommand
 {
 	public:
-		/*simulateBoids();
-		virtual	~simulateBoids();*/
+		//			simulateBoids();
+		// virtual	~simulateBoids();
 		static	void * creator();
 		bool isUndoable() const;
 		// static MSyntax newSyntax();
@@ -38,6 +41,7 @@ class simulateBoids : public MPxCommand
 
 	private:
 		static void cbfProgressBar(float elapsedTime, float lastTime, void * clientData);
-		static MCallbackId idcb;
+		// static MCallbackId idcb;
 		static bool firstTime;
+		int cmdResult;
 };

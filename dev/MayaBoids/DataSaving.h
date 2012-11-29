@@ -3,11 +3,9 @@
 #define _DATASAVING_H_
 
 // mayancache dll project
-#include "../MayaCache/MayaNCache.h"//<MayaNCache.h>	// mayancache file
+#include <MayaNCache.h>	// mayancache file
 //#include <XMLWriter.h>// mayancache xml file
 #include <Boid.h>
-#include "Definition.h"
-
 //#include "TextDataFile.h"	// Example: saving data to txt data file format
 //#include "XMLDataFile.h"	// Example: saving data to xml data file format 
 

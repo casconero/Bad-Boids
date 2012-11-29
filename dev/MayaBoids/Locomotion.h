@@ -2,7 +2,7 @@
 #ifndef _LOCOMOTION_H_
 #define _LOCOMOTION_H_
 
-#include "RulesSetup.h"
+#include "CpuRules.h"
 
 // input vector, output vector
 void locomotionComputation(Vector *decisionVector,Boid *currentBoid, double dt);

@@ -7,6 +7,7 @@ declareAttr(framesPerSecond)	// [int]
 declareAttr(startFrame)		// [int]
 
 declareAttr(particleSystem)		// [mess]
+
 declareAttr(boidsNumber)		// [int]
 // export params
 declareAttr(logFilePath)		// [char *]
@@ -17,6 +18,7 @@ declareRuleAttributes(alignment)
 declareRuleAttributes(cohesion)
 declareRuleAttributes(separation)
 declareRuleAttributes(follow)
+declareAttr(leader)				// [mess]
 /*
 declareAttr(distance)			// [double] max dependency distance for boids (boids at greater distances are ignored)
 declareAttr(repulsionFactor)	// [double]
@@ -120,6 +122,10 @@ MStatus boidsBrain::initialize()
 	nodeCreateRuleAttributes(cohesion, c)
 	nodeCreateRuleAttributes(separation, s)
 	nodeCreateRuleAttributes(follow, f)
+
+	leader=mAttr.create("leader", "ld");
+	nodeAddAttribute(leader);
+
 	/*
 	nodeCreateAttrNum(distance, d, kDouble, BDZ_DIST)
 	nodeCreateAttrNum(repulsionFactor, rf, kDouble, BDZ_REPULSION)
