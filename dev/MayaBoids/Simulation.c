@@ -31,7 +31,7 @@ void initSim(SimulationParameters *simParams, RulesParameters *applyingRules,Inf
 	// initializing cache files and rules settings
 	memcpy(&cacheFileOption,cache,sizeof(InfoCache));
 	rParameters=(RulesParameters**)malloc(nDesires*sizeof(RulesParameters*));
-
+	
 	for(j=0;j<nDesires;j++)
 	{
 		rParameters[j]=(RulesParameters*)malloc(sizeof(RulesParameters));
@@ -97,20 +97,29 @@ int  update()
 	simulationLenght=(unsigned int)ceil(simParameters.fps * simParameters.lenght);
 
 	//_Output(&cacheFileOption);
+	// enabling channels for caching
+	_EnableChannel(IDCHANNEL, ENABLED);
+	_EnableChannel(COUNTCHANNEL, ENABLED);
+	_EnableChannel(BIRTHTIMECHANNEL, ENABLED);
+	_EnableChannel(POSITIONCHANNEL, ENABLED);
+	_EnableChannel(LIFESPANPPCHANNEL, ENABLED);
+	_EnableChannel(FINALLIFESPANPPCHANNEL, ENABLED);
+	_EnableChannel(VELOCITYCHANNEL, ENABLED);
 	
 	while((!abortSimulation) && (progress<=simulationLenght))
 	{
-		Channel *channels;
-		channels=(Channel*)malloc(sizeof(Channel)*info.option);
+		/*Channel *channels;
+		channels=(Channel*)malloc(sizeof(Channel)*info.option);*/
 
 		// compute Boids' new positions, velocities, accelerations 
 		compute();
 
 		// data management
-		cachingData(channels);
+		//cachingData(channels);
 
 		// write data
-		writeData(progress,channels);
+		//writeData(progress,channels);
+		writeData(progress,NULL);
 
 		// update Boids properties and kdtree 
 		updateBoids();
@@ -122,7 +131,7 @@ int  update()
 		progress++;
 		test++;
 		// free channels memory
-		freeChannel(channels);
+		//freeChannel(channels);
 	}
 
 	simulationProgress=100;
@@ -253,7 +262,7 @@ void updateBoids()
 
 void cachingData(Channel *channels)
 {
-	int i;
+	//int i;
 	unsigned long j,totalNumberOfBoids;
 	
 	totalNumberOfBoids = simParameters.numberOfBoids;
@@ -266,7 +275,7 @@ void cachingData(Channel *channels)
 	lifespanPP = (double*)calloc(totalNumberOfBoids, sizeof(double));
 	finalLifespanPP = (double*)calloc(totalNumberOfBoids, sizeof(double));
 
-	for(i=0;i<POSITIONVELOCITY;i++)
+	/*for(i=0;i<POSITIONVELOCITY;i++)
 	{
 		channels[i].name=cName.names[i];
 		channels[i].attribute=aName.names[i];
@@ -289,7 +298,7 @@ void cachingData(Channel *channels)
 				channels[i].type = FVCA;
 				break;
 		};
-	}
+	}*/
 
 	for(j=0;j<simParameters.numberOfBoids;j++)
 	{
@@ -307,13 +316,13 @@ void cachingData(Channel *channels)
 		velocity[3*j+2]=(float)(boidSet[j].currentVelocity.z);
 	}
 
-	channels[_COUNT].elements = &count;
-	channels[_ID].elements = id;
-	channels[_VELOCITY].elements = velocity;
-	channels[_POSITION].elements = position;
-	channels[_BIRTHTIME].elements = birthtime;
-	channels[_LIFESPANPP].elements = lifespanPP;
-	channels[_FINALLIFESPANPP].elements = finalLifespanPP;
+	assignChannelValues(COUNTCHANNEL, &count);
+	assignChannelValues(IDCHANNEL,id);
+	assignChannelValues(POSITIONCHANNEL,position);
+	assignChannelValues(VELOCITYCHANNEL,velocity);
+	assignChannelValues(BIRTHTIMECHANNEL,birthtime);
+	assignChannelValues(LIFESPANPPCHANNEL,lifespanPP);
+	assignChannelValues(FINALLIFESPANPPCHANNEL,finalLifespanPP);
 }
 
 void freeChannel(Channel* channels)

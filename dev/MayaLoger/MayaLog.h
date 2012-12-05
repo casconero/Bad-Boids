@@ -2,6 +2,9 @@
 #ifndef _MayaLog_H_
 #define _MayaLog_H_
 #include <time.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 #define BLENGTH 65536

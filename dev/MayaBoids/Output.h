@@ -8,7 +8,7 @@
 // #include "3dview.h" // management video output (far future)
 // #include "Log.h" // logging every "action"
 
-void _Output(InfoDataCache *cache);
+void _Output(InfoCache *cache);
 void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea);
 void writeData(int frame,Channel *channels);
 void deleteData();

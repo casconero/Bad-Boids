@@ -1,6 +1,6 @@
 #include "DataSaving.h"
 
-void _DataSaving(InfoDataCache *cache)
+void _DataSaving(InfoCache *cache)
 {
 	printf("DataSaving initialization...\n");
 

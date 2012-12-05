@@ -1,13 +1,13 @@
 #include "Output.h"
 
 //initialization, at the moment "output will drive DataSaving only
-void _Output(InfoDataCache *cache)
+void _Output(InfoCache *cache)
 {
 	printf("Output initialization...\n");
 	_DataSaving(cache);
 }
 
-void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea
+void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea)
 {
 	_EnableChannel(channelActive, ea);
 }

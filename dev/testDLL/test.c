@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "../MayaBoids/RulesSetup.h"
-#include "../MayaBoids/Definition.h"
+#include <Definition.h>
 #include "../MayaBoids/Boids.h"
 #include <time.h>
 #include "../CudaBoidsCompute/cforcuda.h"
