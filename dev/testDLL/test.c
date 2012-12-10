@@ -22,7 +22,7 @@ void main()
 	// parametri della simulazione
 	simParams.fps=24;
 	simParams.lenght=10;
-	simParams.numberOfBoids=1000;
+	simParams.numberOfBoids=10;
 	simParams.maxAcceleration=0.1;
 	simParams.maxVelocity=4;
 	simParams.simplifiedLocomotion=TRUE;
@@ -68,7 +68,9 @@ void main()
 	infoCache.particleSysName="BoidsNParticles";
 	infoCache.saveMethod=MAYANCACHE;
 	
-	cudaDeviceError=cudaInit(&simParams,applyingRules,&infoCache,numberOfDesires);
+	boidInit(numberOfDesires, applyingRules, simParams , infoCache, NULL);
+	startSim();
+	/*cudaDeviceError=cudaInit(&simParams,applyingRules,&infoCache,numberOfDesires);
 	if (cudaDeviceError!=OKCUDA)
 	{		
 		if (cudaDeviceError==NO_CUDA_DEVICE)
@@ -97,6 +99,6 @@ void main()
 		tStop = time(NULL);
 	}
 	datetime_diff_ms = difftime(tStop, tStart) * 1000.;
-	printf("Elaboration time %d[mS]\n ",datetime_diff_ms);
+	printf("Elaboration time %d[mS]\n ",datetime_diff_ms);*/
 	getchar();
 }

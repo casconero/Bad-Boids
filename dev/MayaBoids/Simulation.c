@@ -108,18 +108,14 @@ int  update()
 	
 	while((!abortSimulation) && (progress<=simulationLenght))
 	{
-		/*Channel *channels;
-		channels=(Channel*)malloc(sizeof(Channel)*info.option);*/
-
 		// compute Boids' new positions, velocities, accelerations 
 		compute();
 
 		// data management
-		//cachingData(channels);
+		cachingData(NULL);
 
 		// write data
-		//writeData(progress,channels);
-		writeData(progress,NULL);
+		writeData();
 
 		// update Boids properties and kdtree 
 		updateBoids();
@@ -130,8 +126,6 @@ int  update()
 		//advance to the next frame
 		progress++;
 		test++;
-		// free channels memory
-		//freeChannel(channels);
 	}
 
 	simulationProgress=100;
@@ -274,31 +268,6 @@ void cachingData(Channel *channels)
 	birthtime = (double*)calloc(totalNumberOfBoids, sizeof(double));
 	lifespanPP = (double*)calloc(totalNumberOfBoids, sizeof(double));
 	finalLifespanPP = (double*)calloc(totalNumberOfBoids, sizeof(double));
-
-	/*for(i=0;i<POSITIONVELOCITY;i++)
-	{
-		channels[i].name=cName.names[i];
-		channels[i].attribute=aName.names[i];
-
-		if(i==_COUNT)
-			channels[i].numberOfElements = 1;
-		else
-			channels[i].numberOfElements = totalNumberOfBoids;
-
-		switch(i)
-		{
-			case _COUNT:
-			case _ID:
-			case _BIRTHTIME:
-			case _LIFESPANPP:
-			case _FINALLIFESPANPP:
-				channels[i].type = DBLA;
-				break;
-			default:
-				channels[i].type = FVCA;
-				break;
-		};
-	}*/
 
 	for(j=0;j<simParameters.numberOfBoids;j++)
 	{

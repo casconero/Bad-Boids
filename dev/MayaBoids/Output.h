@@ -10,7 +10,7 @@
 
 void _Output(InfoCache *cache);
 void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea);
-void writeData(int frame,Channel *channels);
+void writeData();
 void deleteData();
 void closeData();
 

@@ -88,7 +88,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>BOIDSDLLDEV.lib</AdditionalDependencies>
+      <AdditionalDependencies>MayaBoids.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Output\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>BOIDSDLLDEV.lib</AdditionalDependencies>
+      <AdditionalDependencies>MayaBoids.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Output\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -162,7 +162,7 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>BOIDSDLLDEV.lib</AdditionalDependencies>
+      <AdditionalDependencies>MayaBoids.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Output\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>

@@ -7,21 +7,9 @@ void _Output(InfoCache *cache)
 	_DataSaving(cache);
 }
 
-void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea)
-{
-	_EnableChannel(channelActive, ea);
-}
-void writeData(int frame,Channel *channels)
-{
-	_write(frame,channels);
-}
+void _EnableChannelData(CHANNELTYPE channelActive, ENABLEDISABLED ea){_EnableChannel(channelActive, ea);}
+void writeData(){_write();}
 
-void deleteData()
-{
-	_delete();
-}
+void deleteData(){_delete();}
 
-void closeData()
-{
-	_close();
-}
+void closeData(){_close();}

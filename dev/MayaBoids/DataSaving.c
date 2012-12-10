@@ -9,6 +9,7 @@ void _DataSaving(InfoCache *cache)
 	case MAYANCACHE:
 		initMethod = init;
 		saveMethod = mayaCache;
+		assignChannelMethod = assignChannelValues;
 		enableChannelMethod = enableChannel;
 		closeMethod = closeMayaNCacheFile;
 		deleteMethod = deleteFile;
@@ -37,22 +38,10 @@ void _DataSaving(InfoCache *cache)
 	initMethod(cache->particleSysName,cache->fileName,cache->cacheFormat,cache->option,cache->fps,cache->start,cache->end,NULL,0);
 }
 
-void _EnableChannel(CHANNELTYPE channelActive, ENABLEDISABLED ea)
-{
-	enableChannelMethod(channelActive, ea);
-}
+void _EnableChannel(CHANNELTYPE channelActive, ENABLEDISABLED ea){enableChannelMethod(channelActive, ea);}
 
-void _write(int frame, Channel * channels)
-{
-	saveMethod();
-}
+void _write(){saveMethod();}
 
-void _delete()
-{
-	deleteMethod();
-}
+void _delete(){deleteMethod();}
 
-void _close()
-{
-	closeMethod();
-}
+void _close(){closeMethod();}
