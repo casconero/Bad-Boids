@@ -89,23 +89,17 @@ void initSim(SimulationParameters *simParams, RulesParameters *applyingRules,Inf
 int  update()
 {
 	unsigned int simulationLenght,progress;
-	int exitValue;
+	int exitValue,i;
 	
 	int test=0;
 
 	progress=0;
 	simulationLenght=(unsigned int)ceil(simParameters.fps * simParameters.lenght);
-
-	//_Output(&cacheFileOption);
-	// enabling channels for caching
-	_EnableChannel(IDCHANNEL, ENABLED);
-	_EnableChannel(COUNTCHANNEL, ENABLED);
-	_EnableChannel(BIRTHTIMECHANNEL, ENABLED);
-	_EnableChannel(POSITIONCHANNEL, ENABLED);
-	_EnableChannel(LIFESPANPPCHANNEL, ENABLED);
-	_EnableChannel(FINALLIFESPANPPCHANNEL, ENABLED);
-	_EnableChannel(VELOCITYCHANNEL, ENABLED);
 	
+	// enabling channels for caching
+	for (i=0;i<CACHENUMBEROFCHANNELS;i++)
+		if (cacheFileOption.selectedChannels[i])
+			_EnableChannel(i, ENABLED);
 	while((!abortSimulation) && (progress<=simulationLenght))
 	{
 		// compute Boids' new positions, velocities, accelerations 

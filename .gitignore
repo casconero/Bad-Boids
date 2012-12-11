@@ -14,9 +14,6 @@ dev/TestDLL/Release/
 dev/Intermediate
 dev/Output
 
-dev/KDTree/
-
-
 *.vcxproj.filters
 *.vcxproj.user
 *.pdb

@@ -57,8 +57,20 @@ void main()
 	
 	// DISABLING FOLLOW RULE
 	//applyingRules[FOLLOWRULE].enabled=FALSE;
+	
+	// disabling eligible channels for saving
+	for (i=0;i<CACHENUMBEROFCHANNELS;i++)
+		infoCache.selectedChannels[i]=FALSE;
 
-	infoCache.cacheFormat=ONEFILE;
+	infoCache.selectedChannels[IDCHANNEL]=TRUE; 
+	infoCache.selectedChannels[COUNTCHANNEL]=TRUE;
+	infoCache.selectedChannels[BIRTHTIMECHANNEL]=TRUE;
+	infoCache.selectedChannels[POSITIONCHANNEL]=TRUE;
+	infoCache.selectedChannels[LIFESPANPPCHANNEL]=TRUE;
+	infoCache.selectedChannels[FINALLIFESPANPPCHANNEL]=TRUE;
+	infoCache.selectedChannels[VELOCITYCHANNEL]=TRUE;
+
+	infoCache.cacheFormat=ONEFILEPERFRAME;
 	infoCache.start=0;
 	infoCache.end=infoCache.start + (long )simParams.lenght;
 	infoCache.fileName="c:\\temp\\BdirectCacheSimulationFile";

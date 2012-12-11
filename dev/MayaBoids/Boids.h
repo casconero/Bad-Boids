@@ -36,12 +36,6 @@ extern "C" {
 	void DLL_EXPORT stopSim();
 
 	int DLL_EXPORT getProgression();
-	
-	
-
-	
-
-	
 
 #ifdef __cplusplus
 }

@@ -35,6 +35,7 @@ typedef struct infoCache
 	char *fileName;
 	SAVEMETHOD saveMethod;
 	CACHEFORMAT cacheFormat;
+	BOOL selectedChannels[CACHENUMBEROFCHANNELS];
 	CACHEOPTION option;
 	LOG loging;
 	unsigned int fps;
